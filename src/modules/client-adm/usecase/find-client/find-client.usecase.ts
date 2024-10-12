@@ -1,4 +1,3 @@
-
 import Address from "../../../@shared/domain/value-object/address";
 import ClientGateway from "../../gateway/client.gateway";
 import { FindClientUseCaseInputDto, FindClientUseCaseOutputDto } from "./find-client.usecase.dto";
