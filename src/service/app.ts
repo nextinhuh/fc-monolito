@@ -46,8 +46,22 @@ app.post('/clients', async (req, res) => {
   res.status(201).json(clientCreated)
 })
 
-app.post('/checkout', (req, res) => {
-  res.send('hello world')
+app.post('/checkout', async (req, res) => {
+  const checkoutData = req.body
+  const newClient = addClientInputDtoSchema.safeParse(checkoutData)
+
+  if (!newClient.success) {
+    return res.status(400).json({
+      message: 'Invalid client data',
+      errors: newClient.error.errors,
+    })
+  }
+
+  const clientRepository = new ClientRepository()
+  const addClientUseCase = new AddClientUseCase(clientRepository)
+  const clientCreated = await addClientUseCase.execute(newClient.data)
+
+  res.status(201).json(clientCreated)
 })
 
 app.get('/invoice/:id', (req, res) => {
