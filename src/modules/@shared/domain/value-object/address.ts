@@ -1,3 +1,4 @@
+import { z } from "zod"
 import ValueObject from "../../../@shared/domain/value-object/value-object.interface"
 
 export default class Address implements ValueObject {
@@ -63,3 +64,14 @@ export default class Address implements ValueObject {
     }
   }
 }
+
+export const addressSchema = z.object({
+  street: z.string().min(1, { message: "Street is required" }),
+  number: z.string().min(1, { message: "Number is required" }),
+  complement: z.string().min(1, { message: "Complement is required" }),
+  city: z.string().min(1, { message: "City is required" }),
+  state: z.string().min(1, { message: "State is required" }),
+  zipCode: z.string().min(1, { message: "Zip code is required" })
+});
+
+export type AddressData = z.infer<typeof addressSchema>;

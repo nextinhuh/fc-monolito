@@ -1,17 +1,22 @@
-export interface AddProductInputDto {
-  id?: string;
-  name: string;
-  description: string;
-  purchasePrice: number;
-  stock: number;
-}
+import { z } from "zod";
 
-export interface AddProductOutputDto {
-  id: string;
-  name: string;
-  description: string;
-  purchasePrice: number;
-  stock: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export const addProductInputDtoSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(3).max(255),
+  description: z.string().min(3).max(255),
+  purchasePrice: z.number().positive(),
+  stock: z.number().int().nonnegative(),
+});
+
+export const addProductOutputDtoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  purchasePrice: z.number(),
+  stock: z.number(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type AddProductInputDto = z.infer<typeof addProductInputDtoSchema>;
+export type AddProductOutputDto = z.infer<typeof addProductOutputDtoSchema>;
