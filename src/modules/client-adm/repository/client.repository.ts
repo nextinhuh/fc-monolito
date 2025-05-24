@@ -1,3 +1,4 @@
+import { CustomException } from "../../../lib/custom-exception";
 import Address from "../../@shared/domain/value-object/address";
 import Id from "../../@shared/domain/value-object/id.value-object";
 import Client from "../domain/client.entity";
@@ -29,7 +30,7 @@ export default class ClientRepository implements ClientGateway {
     const client = await ClientModel.findOne({ where: { id } })
 
     if (!client) {
-      throw new Error("Client not found")
+      throw new CustomException("Client not found", 404)
     }
 
     return new Client({

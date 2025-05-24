@@ -6,6 +6,7 @@ import CheckoutGateway from "../gateway/checkout.gateway";
 import { OrderProductModel } from "./order-products.model";
 import Product from "../domain/product.entity";
 import Client from "../domain/client.entity";
+import { v4 } from "uuid";
 
 export default class CheckoutRepository implements CheckoutGateway {
   
@@ -19,7 +20,7 @@ export default class CheckoutRepository implements CheckoutGateway {
     })
     
     const orderProducts = entity.products.map(product => ({
-      id: entity.id.id,
+      id: v4(),
       orderId: orderCreated.id,
       productId: product.id.id,
       createdAt: entity.createdAt,

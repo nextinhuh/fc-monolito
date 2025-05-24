@@ -1,3 +1,4 @@
+import { CustomException } from "../../../lib/custom-exception";
 import Id from "../../@shared/domain/value-object/id.value-object";
 import Product from "../domain/product.entity";
 import ProductGateway from "../gateway/product.gateway";
@@ -21,7 +22,7 @@ export default class ProductRepository implements ProductGateway {
     });
 
     if (!product) {
-      throw new Error(`Product with id ${id} not found`);
+      throw new CustomException(`Product with id ${id} not found`, 404);
     }
 
     return new Product({

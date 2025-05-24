@@ -1,3 +1,4 @@
+import { v4 } from "uuid"
 import Address from "../../../@shared/domain/value-object/address"
 import Id from "../../../@shared/domain/value-object/id.value-object"
 import InvoiceItem from "../../domain/invoice-item.entity"
@@ -26,7 +27,7 @@ export default class GenerateInvoiceUseCase {
                 input.zipCode
             ),
             items: input.items.map(item => new InvoiceItem({
-                id: new Id(item.id),
+                id: new Id(v4()),
                 name: item.name,
                 price: item.price
             })),

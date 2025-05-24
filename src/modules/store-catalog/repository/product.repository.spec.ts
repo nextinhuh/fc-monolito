@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
-import ProductModel from "./product.model";
 import ProductRepository from "./product.repository";
+import { ProductModel } from "../../product-adm/repository/product.model";
 
 describe("ProductRepository test", () => {
   let sequelize: Sequelize;
@@ -27,13 +27,21 @@ describe("ProductRepository test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      purchasePrice: 50,
+      stock: 10,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
-
+    
     await ProductModel.create({
       id: "2",
       name: "Product 2",
       description: "Description 2",
       salesPrice: 200,
+      purchasePrice: 100,
+      stock: 20,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     const productRepository = new ProductRepository();
@@ -56,6 +64,10 @@ describe("ProductRepository test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      purchasePrice: 50,
+      stock: 10,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     const productRepository = new ProductRepository();
@@ -64,6 +76,6 @@ describe("ProductRepository test", () => {
     expect(product.id.id).toBe("1");
     expect(product.name).toBe("Product 1");
     expect(product.description).toBe("Description 1");
-    expect(product.salesPrice).toBe(100);
+    expect(product.salesPrice).toBe(50);
   });
 });

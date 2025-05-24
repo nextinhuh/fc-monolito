@@ -6,7 +6,7 @@ import InvoiceGateway from "../gateway/invoice.gateway";
 import { InvoiceItemsModel } from "./invoice-items.model";
 import { InvoiceModel } from "./invoice.model";
 
-export default class invoiceRepository implements InvoiceGateway {
+export default class InvoiceRepository implements InvoiceGateway {
     
     async generate(invoice: Invoice): Promise<Invoice> {
         

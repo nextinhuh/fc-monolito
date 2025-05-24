@@ -6,11 +6,26 @@ import sequelize from '../lib/init-sequelize-db'
 import ClientRepository from '../modules/client-adm/repository/client.repository'
 import AddClientUseCase from '../modules/client-adm/usecase/add-client/add-client.usecase'
 import { addClientInputDtoSchema } from '../modules/client-adm/usecase/add-client/add-client.usecase.dto'
+import { placeOrderInputDtoSchema } from '../modules/checkout/usecase/place-order/place-order.dto'
+import CheckoutRepository from '../modules/checkout/repository/checkout.repository'
+import PlaceOrderUseCase from '../modules/checkout/usecase/place-order/place-order-usecase'
+import ClientAdmFacadeFactory from '../modules/client-adm/factory/client-adm.facade.factory'
+import ProductAdmFacadeFactory from '../modules/product-adm/factory/facade.factory'
+import StoreCatalogFacadeFactory from '../modules/store-catalog/factory/facade.factory'
+import { exceptionMiddleware } from './exception-middleware'
+import InvoiceRepository from '../modules/invoice/repository/invoice.repository'
+import FindInvoiceByIdUseCase from '../modules/invoice/usecase/find-invoice-by-id/find-invoice-by-id.usecase'
+import Invoice from '../modules/invoice/domain/invoice.entity'
+import InvoiceFacadeFactory from '../modules/invoice/factory/invoice.facade.factory'
 
 const app = express()
 app.use(express.json())
 
-app.post('/products', async (req, res) => {
+const asyncHandler = (fn: any) => (req: any, res: any, next: any) => {
+  return Promise.resolve(fn(req, res, next)).catch(next)
+}
+
+app.post('/products', asyncHandler(async (req: express.Request, res: express.Response) => {
   const producData = req.body
   const newProduct = addProductInputDtoSchema.safeParse(producData)
 
@@ -26,9 +41,9 @@ app.post('/products', async (req, res) => {
   const productCreated = await addProductUseCase.execute(newProduct.data)
 
   res.status(201).json(productCreated)
-})
+}))
 
-app.post('/clients', async (req, res) => {
+app.post('/clients', asyncHandler(async (req: express.Request, res: express.Response) => {
   const clientData = req.body
   const newClient = addClientInputDtoSchema.safeParse(clientData)
 
@@ -44,30 +59,46 @@ app.post('/clients', async (req, res) => {
   const clientCreated = await addClientUseCase.execute(newClient.data)
 
   res.status(201).json(clientCreated)
-})
+}))
 
-app.post('/checkout', async (req, res) => {
+app.post('/checkout', asyncHandler(async (req: express.Request, res: express.Response) => {
   const checkoutData = req.body
-  const newClient = addClientInputDtoSchema.safeParse(checkoutData)
+  const newCheckout = placeOrderInputDtoSchema.safeParse(checkoutData)
 
-  if (!newClient.success) {
+  if (!newCheckout.success) {
     return res.status(400).json({
       message: 'Invalid client data',
-      errors: newClient.error.errors,
+      errors: newCheckout.error.errors,
     })
   }
 
-  const clientRepository = new ClientRepository()
-  const addClientUseCase = new AddClientUseCase(clientRepository)
-  const clientCreated = await addClientUseCase.execute(newClient.data)
+  const invoiceFacade = InvoiceFacadeFactory.create()
+  const clientFacade = ClientAdmFacadeFactory.create()
+  const productFacade = ProductAdmFacadeFactory.create()
+  const catalogFacade = StoreCatalogFacadeFactory.create()
+  const checkoutRepository = new CheckoutRepository()
+  const placeOrderUseCase = new PlaceOrderUseCase(
+    invoiceFacade,
+    clientFacade,
+    productFacade,
+    catalogFacade,
+    checkoutRepository
+  )
+  const checkoutCreated = await placeOrderUseCase.execute(newCheckout.data)
 
-  res.status(201).json(clientCreated)
-})
+  res.status(201).json(checkoutCreated)
+}))
 
-app.get('/invoice/:id', (req, res) => {
-  
-  res.send('hello world: ' + req.params.id)
-})
+app.get('/invoice/:id', asyncHandler(async (req: express.Request, res: express.Response) => {
+  if (!req.params.id) {
+    return res.status(400).json({ message: 'Invoice ID is required' })
+  }
+
+  const invoiceRepository = new InvoiceRepository()
+  const findInvoiceByIdUseCase = new FindInvoiceByIdUseCase(invoiceRepository)
+  const invoiceFounded = await findInvoiceByIdUseCase.execute({ id: req.params.id })
+  res.send(invoiceFounded)
+}))
 
 async function initDB(){
   try {
@@ -87,22 +118,5 @@ async function start() {
   })
 }
 
+app.use(exceptionMiddleware)
 start()
-
-/* Criação de API
-
-Agora que temos todos os usecases, precisamos disponibilizar os endpoints para que possamos 
-realizar uma compra.
-
-Disponibilize os seguintes endpoints:
-
-POST /products
-POST /clients
-POST /checkout/
-GET /invoice/<id>
-
-* A linguagem de programação para este desafio é TypeScript
-
-Implemente os testes end-to-end destes endpoints com a lib supertest, 
-ao rodar o comando "npm run test" a aplicação deve executar todos os testes. 
-Se tiver dúvidas de como usar o supertest acesse o módulo de Clean Arch no módulo Camada de API. */
